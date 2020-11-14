@@ -30,8 +30,6 @@ def home():
             "/api/v1.0/scart/end <br/>")
 
 # * `/api/v1.0/precipitation`
-#   * Convert the query results to a dictionary using `date` as the key and `prcp` as the value.
-#   * Return the JSON representation of your dictionary.
 
 @weatherapp.route("/api/v1.0/precipitation")
 def precipitation():
