@@ -35,16 +35,28 @@ def home():
 
 @weatherapp.route("/api/v1.0/precipitation")
 def precipitation():
-    print("Server received request for 'precipitation' page...")
-    return "Welcome to my 'precipitation' page!"
+    precip_session = Session(engine)
+
+    precip_result = precip_session.query(measurement.date, measurement.prcp).all()
+
+    precip_session.close()
+
+    list_prcp = []
+    
+    for date, prcp in precip_result:
+        precip_dict = {}
+        precip_dict["date"] = date
+        precip_dict["prcp"] = prcp
+        list_prcp.append(precip_dict)
+
+    return jsonify(list_prcp)
 
 # * `/api/v1.0/stations`
 #   * Return a JSON list of stations from the dataset.
 
 @weatherapp.route("/api/v1.0/stations")
 def stations():
-    print("Server received request for 'precipitation' page...")
-    return "Welcome to my 'precipitation' page!"
+   
 
 # * `/api/v1.0/tobs`
 #   * Query the dates and temperature observations of the most active station 
