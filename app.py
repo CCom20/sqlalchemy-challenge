@@ -14,6 +14,7 @@ Base.prepare(engine, reflect=True)
 
 # Save reference to the table
 measurement = Base.classes.measurement
+station_ref = Base.classes.station
 
 weatherapp = Flask(__name__)
 
