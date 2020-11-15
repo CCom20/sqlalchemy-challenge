@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
+import datetime as dt
 
 # Database
 engine = create_engine("sqlite:///Resources/hawaii.sqlite")
@@ -72,14 +73,29 @@ def stations():
     return jsonify(list_stations)
 
 # * `/api/v1.0/tobs`
-#   * Query the dates and temperature observations of the most active station 
+#   * Query the dates and temperature observations of the most active station == USC00519523
 #   * for the last year of data.
 #   * Return a JSON list of temperature observations (TOBS) for the previous year.
 
 @weatherapp.route("/api/v1.0/tobs")
 def tobs():
-    print("Server received request for 'Temperature Observations' page...")
-    return "Welcome to my 'Temperature Observations' page!"
+    temps_session = Session(engine)
+
+    query_date = dt.date(2017, 8, 23) - dt.timedelta(weeks=52)
+
+    temp_results = temps_session.query(measurement.date, measurement.tobs).filter(measurement.station == 'USC00519281').filter(measurement.date >= query_date).all()
+
+    temps_session.close()
+
+    list_temps = []
+
+    for date, tobs in temp_results:
+        temp_dict = {}
+        temp_dict["date"] = date
+        temp_dict["tobs"] = tobs
+        list_temps.append(temp_dict)
+
+    return jsonify(list_temps)
 
 # * `/api/v1.0/<start>` and `/api/v1.0/<start>/<end>`
 
