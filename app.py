@@ -55,7 +55,21 @@ def precipitation():
 
 @weatherapp.route("/api/v1.0/stations")
 def stations():
-   
+    station_session = Session(engine)
+
+    station_results = station_session.query(station_ref.station, station_ref.name).all()
+
+    station_session.close()
+
+    list_stations = []
+
+    for station, name in station_results:
+        station_dict = {}
+        station_dict["station"] = station
+        station_dict["name"] = name
+        list_stations.append(station_dict)
+    
+    return jsonify(list_stations)
 
 # * `/api/v1.0/tobs`
 #   * Query the dates and temperature observations of the most active station 
