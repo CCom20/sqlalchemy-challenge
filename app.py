@@ -52,7 +52,6 @@ def precipitation():
     return jsonify(list_prcp)
 
 # * `/api/v1.0/stations`
-#   * Return a JSON list of stations from the dataset.
 
 @weatherapp.route("/api/v1.0/stations")
 def stations():
@@ -73,9 +72,6 @@ def stations():
     return jsonify(list_stations)
 
 # * `/api/v1.0/tobs`
-#   * Query the dates and temperature observations of the most active station == USC00519523
-#   * for the last year of data.
-#   * Return a JSON list of temperature observations (TOBS) for the previous year.
 
 @weatherapp.route("/api/v1.0/tobs")
 def tobs():
@@ -97,21 +93,49 @@ def tobs():
 
     return jsonify(list_temps)
 
-# * `/api/v1.0/<start>` and `/api/v1.0/<start>/<end>`
+# * `/api/v1.0/<start>`
 
-@weatherapp.route("/api/v1.0/range")
-def range():
-    print("Server received request for 'Ranges' page...")
-    return "Welcome to my 'Temperature Observations' page!"
+@weatherapp.route("/api/v1.0/<start_date>")
+def range(start_date):
 
-#   * Return a JSON list of the minimum temperature, the average temperature,
-#    and the max temperature for a given start or start-end range.
+    range_session = Session(engine)
 
-#   * When given the start only, calculate 
-#   * `TMIN`, `TAVG`, and `TMAX` for all dates greater than and equal to the start date.
+    range_results = range_session.query(func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).filter(measurement.date >= start_date).all()
 
-#   * When given the start and the end date, calculate the 
-#   * `TMIN`, `TAVG`, and `TMAX` for dates between the start and end date inclusive.
+    range_session.close()
+
+    list_start = []
+
+    for min, max, avg in range_results:
+        start_dict = {}
+        start_dict["min_tobs"] = min
+        start_dict["max_tobs"] = max
+        start_dict["avg_tobs"] = round(avg, 2)
+        list_start.append(start_dict)
+
+    return jsonify(list_start)
+
+#  `/api/v1.0/<start>/<end>`
+
+@weatherapp.route("/api/v1.0/<start_date>/<end_date>")
+def start_end(start_date, end_date):
+
+    start_end_session = Session(engine)
+
+    range_results = start_end_session.query(func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).filter(measurement.date >= start_date).filter(measurement.date <= end_date).all()
+
+    start_end_session.close()
+
+    list_start_end = []
+
+    for min, max, avg in range_results:
+        start_end_dict = {}
+        start_end_dict["min_tobs"] = min
+        start_end_dict["max_tobs"] = max
+        start_end_dict["avg_tobs"] = round(avg, 2)
+        list_start_end.append(start_end_dict)
+
+    return jsonify(list_start_end)
 
 if __name__ == "__main__":
     weatherapp.run(debug=True)
