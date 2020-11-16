@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
 import datetime as dt
 
-# Database
+# Create the engine
 engine = create_engine("sqlite:///Resources/hawaii.sqlite")
 
 # reflect an existing database into a new model
@@ -13,14 +13,15 @@ Base = automap_base()
 # reflect the tables
 Base.prepare(engine, reflect=True)
 
-# Save reference to the table
+# Save reference to the tables
 measurement = Base.classes.measurement
 station_ref = Base.classes.station
 
-weatherapp = Flask(__name__)
+app = Flask(__name__)
 
-# `/` __ Home page: List all routes that are available.
-@weatherapp.route("/")
+# Home page: List all routes that are available.
+
+@app.route("/")
 def home():
     print("Homepage request received...")
     return ("<br/>"
@@ -31,9 +32,9 @@ def home():
             "/api/v1.0/tobs <br/>"
             "/api/v1.0/scart/end <br/>")
 
-# * `/api/v1.0/precipitation`
+# Precipitation Page: List all data
 
-@weatherapp.route("/api/v1.0/precipitation")
+@app.route("/api/v1.0/precipitation")
 def precipitation():
     precip_session = Session(engine)
 
@@ -51,9 +52,9 @@ def precipitation():
 
     return jsonify(list_prcp)
 
-# * `/api/v1.0/stations`
+# Stations Page: List all stations
 
-@weatherapp.route("/api/v1.0/stations")
+@app.route("/api/v1.0/stations")
 def stations():
     station_session = Session(engine)
 
@@ -71,13 +72,13 @@ def stations():
     
     return jsonify(list_stations)
 
-# * `/api/v1.0/tobs`
+# Temperature Observations: List temp observations through one year ago
 
-@weatherapp.route("/api/v1.0/tobs")
+@app.route("/api/v1.0/tobs")
 def tobs():
     temps_session = Session(engine)
 
-    query_date = dt.date(2017, 8, 23) - dt.timedelta(weeks=52)
+    query_date = dt.date(2017, 8, 23) - dt.timedelta(days=365)
 
     temp_results = temps_session.query(measurement.date, measurement.tobs).filter(measurement.station == 'USC00519281').filter(measurement.date >= query_date).all()
 
@@ -93,9 +94,9 @@ def tobs():
 
     return jsonify(list_temps)
 
-# * `/api/v1.0/<start>`
+# Page for Start Dates - user filtering
 
-@weatherapp.route("/api/v1.0/<start_date>")
+@app.route("/api/v1.0/<start_date>")
 def range(start_date):
 
     range_session = Session(engine)
@@ -115,9 +116,9 @@ def range(start_date):
 
     return jsonify(list_start)
 
-#  `/api/v1.0/<start>/<end>`
+#  Start and End Dates - user filtering
 
-@weatherapp.route("/api/v1.0/<start_date>/<end_date>")
+@app.route("/api/v1.0/<start_date>/<end_date>")
 def start_end(start_date, end_date):
 
     start_end_session = Session(engine)
@@ -138,4 +139,4 @@ def start_end(start_date, end_date):
     return jsonify(list_start_end)
 
 if __name__ == "__main__":
-    weatherapp.run(debug=True)
+    app.run(debug=True)
